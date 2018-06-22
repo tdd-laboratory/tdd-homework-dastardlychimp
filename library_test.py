@@ -26,6 +26,9 @@ class TestCase(unittest.TestCase):
     def test_integers(self):
         self.assert_extract(NUM_CORPUS, library.integers, '1845', '15', '20', '80')
 
+    def test_integers_comma_sepearated(self):
+        self.assert_extract('This is a , separated number list: 12,3242,15', '12', '3242', '15')
+
 
     # Third unit test; prove that if we look for integers where there are none, we get no results.
     def test_no_integers(self):
@@ -90,6 +93,63 @@ class TestExtractISO8601(unittest.TestCase):
         self.assert_extract("I was born on 2015-07-25, not on 2015-07-26.", "2015-07-25", "2015-07-26")
         self.assert_extract("I was not born on 2015-13-02 because it is invalid, but on 2000-12-01", "2000-12-01")
 
+    def test_timestamp_hours(self):
+        self.assert_extract("I was born on 2015-07-25 23", "2015-07-25 23")
+        self.assert_extract("I was born on 2015-07-25 00", "2015-07-25 00")
+        self.assert_extract("I was born on 2015-07-25 2")
+        self.assert_extract("I was born on 2015-07-25 25")
+
+    def test_timestamp_minutes(self):
+        self.assert_extract("I was born on 2015-07-25 23:14", "2015-07-25 23:14")
+        self.assert_extract("I was born on 2015-07-25 00:00", "2015-07-25 00:00")
+        self.assert_extract("I was born on 2015-07-25 23:1")
+        self.assert_extract("I was born on 2015-07-25 11:61")
+
+    def test_timestamp_seconds(self):
+        self.assert_extract("I was born on 2015-07-25 23:14:12", "2015-07-25 23:14:12")
+        self.assert_extract("I was born on 2015-07-25 11:11:00", "2015-07-25 11:11:00")
+        self.assert_extract("I was born on 2015-07-25 23:14:1")
+        self.assert_extract("I was born on 2015-07-25 04:12:61")
+    
+    def test_timestamp_milliseconds(self):
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943", "2015-07-25 23:14:12.943")
+        self.assert_extract("I was born on 2015-07-25 11:11:12:000", "2015-07-25 11:11:12:000")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.1")
+        self.assert_extract("I was born on 2015-07-25 04:12:58:0721")
+    
+
+    def test_timestamp_timezones(self):
+        self.assert_extract("I was born on 2015-07-25 23MDT", "2015-07-25 23MDT")
+        self.assert_extract("I was born on 2015-07-25 23:14UTC", "2015-07-25 23:14UTC")
+        self.assert_extract("I was born on 2015-07-25 23:14:12Z", "2015-07-25 23:14:12Z")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943UTC", "2015-07-25 23:14:12.943UTC")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943-0800", "2015-07-25 23:14:12.943-0800")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943-0000", "2015-07-25 23:14:12.943-0000")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943Z-0800")
+        self.assert_extract("I was born on 2015-07-25 23:14:12.943-000")
+        self.assert_extract("I was born on 2015-07-25 23MT")
+        self.assert_extract("I was born on 2015-07-25MDT")
+
+    def test_timestamp_multiple(self):
+        text_multiple_dates = '''
+            This is a large pice of text with several timezones:
+                2015-07-25 23:14:12.943-0800
+                2015-07-25 23:14:12
+                2015-12-31.
+            We even have a couple of invalid ones too
+                2015-07-25 04:12:58:0721
+                2015-09-31.
+        '''
+        self.assert_extract(text_multiple_dates, "2015-07-25 23:14:12.943-0800", "2015-07-25 23:14:12", "2015-12-31")
+
+    def test_timestamp_delimiter(self):
+        self.assert_extract("I was born on 2015-07-25T23MDT", "2015-07-25T23MDT")
+        self.assert_extract("I was born on 2015-07-25T23:14UTC", "2015-07-25T23:14UTC")
+        self.assert_extract("I was born on 2015-07-25T23:14:12Z", "2015-07-25T23:14:12Z")
+        self.assert_extract("I was born on 2015-07-25T23:14:12.943UTC", "2015-07-25T23:14:12.943")
+        self.assert_extract("I was born on 2015-07-25T23:14:12.943-0800", "2015-07-25T23:14:12.943-0800")
+        self.assert_extract("I was born on 2015-07-25:23MDT")
+        self.assert_extract("I was born on 2015-07-25-23MDT")
 
 class TestValidDate(unittest.TestCase):
 
@@ -167,6 +227,20 @@ class TestExtractDateWordMonth(unittest.TestCase):
         self.assert_extract("I was born on 25 Oct 2015.", "25 Oct 2015")
         self.assert_extract("I was born on 25 Nov 2413.", "25 Nov 2413")
         self.assert_extract("I was born on 25 Dec 2015.", "25 Dec 2015")
+
+    def test_extract_string_with_comma(self):
+        self.assert_extract("I was born on 25 Jan, 1911.", "25 Jan, 1911")
+        self.assert_extract("I was born on 25 Feb, 2015.", "25 Feb, 2015")
+        self.assert_extract("I was born on 03 Mar, 2015.", "03 Mar, 2015")
+        self.assert_extract("I was born on 25 Apr, 9382.", "25 Apr, 9382")
+        self.assert_extract("I was born on 25 May, 2015.", "25 May, 2015")
+        self.assert_extract("I was born on 11 Jun, 2015.", "11 Jun, 2015")
+        self.assert_extract("I was born on 25 Jul, 2015.", "25 Jul, 2015")
+        self.assert_extract("I was born on 25 Aug, 2015.", "25 Aug, 2015")
+        self.assert_extract("I was born on 25 Sep, 0012.", "25 Sep, 0012")
+        self.assert_extract("I was born on 25 Oct, 2015.", "25 Oct, 2015")
+        self.assert_extract("I was born on 25 Nov, 2413.", "25 Nov, 2413")
+        self.assert_extract("I was born on 25 Dec, 2015.", "25 Dec, 2015")
 
     def test_invalid_month(self):
         self.assert_extract("I was born on 25 Gru 2015.")
