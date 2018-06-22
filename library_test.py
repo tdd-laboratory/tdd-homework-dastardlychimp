@@ -155,23 +155,24 @@ class TestExtractDateWordMonth(unittest.TestCase):
         self.assertEqual(actual, list(expected))
 
     def test_extract_string_every_month(self):
-        self.assert_extract("I was born on 25 Jan 2015.", "25 Jan 2015")
+        self.assert_extract("I was born on 25 Jan 1911.", "25 Jan 1911")
         self.assert_extract("I was born on 25 Feb 2015.", "25 Feb 2015")
-        self.assert_extract("I was born on 25 Mar 2015.", "25 Mar 2015")
-        self.assert_extract("I was born on 25 Apr 2015.", "25 Apr 2015")
+        self.assert_extract("I was born on 03 Mar 2015.", "03 Mar 2015")
+        self.assert_extract("I was born on 25 Apr 9382.", "25 Apr 9382")
         self.assert_extract("I was born on 25 May 2015.", "25 May 2015")
-        self.assert_extract("I was born on 25 Jun 2015.", "25 Jun 2015")
+        self.assert_extract("I was born on 11 Jun 2015.", "11 Jun 2015")
         self.assert_extract("I was born on 25 Jul 2015.", "25 Jul 2015")
         self.assert_extract("I was born on 25 Aug 2015.", "25 Aug 2015")
-        self.assert_extract("I was born on 25 Sep 2015.", "25 Sep 2015")
+        self.assert_extract("I was born on 25 Sep 0012.", "25 Sep 0012")
         self.assert_extract("I was born on 25 Oct 2015.", "25 Oct 2015")
-        self.assert_extract("I was born on 25 Nov 2015.", "25 Nov 2015")
+        self.assert_extract("I was born on 25 Nov 2413.", "25 Nov 2413")
         self.assert_extract("I was born on 25 Dec 2015.", "25 Dec 2015")
 
     def test_invalid_month(self):
         self.assert_extract("I was born on 25 Gru 2015.")
         self.assert_extract("I was born on 25 March 2015.")
         self.assert_extract("I was born on 25 Ja 2015.")
+        self.assert_extract("I was born on 25 jan 2015.")
 
     def test_day_greater_than_31(self):
         self.assert_extract("I was born on 32 Jan 2015.")
@@ -195,8 +196,8 @@ class TestExtractDateWordMonth(unittest.TestCase):
         self.assert_extract("I was born on 31 Dec 2015.", "31 Dec 2015")
 
     def test_month_february(self):
-        self.assert_extract("I was born on 29 Feb 2015")
-        self.assert_extract("I was born on 29 Feb 20000.", "29 Feb 20000")
+        self.assert_extract("I was born on 29 Feb 2015.")
+        self.assert_extract("I was born on 29 Feb 2000.", "29 Feb 2000")
 
     def test_end_beginning_of_line(self):
         self.assert_extract("I was born on 25 Jul 2015", "25 Jul 2015")
@@ -204,7 +205,7 @@ class TestExtractDateWordMonth(unittest.TestCase):
 
     def test_multiple_addresses(self):
         self.assert_extract("I was born on 25 Jul 2015, not on 26 Jul 2015.", "25 Jul 2015", "26 Jul 2015")
-        self.assert_extract("I was not born on Jan 32 2015 because it is invalid, but on Jan 1 2015", "Jan 1 2015")
+        self.assert_extract("I was not born on Jan 32 2015 because it is invalid, but on 01 Jan 2015.", "01 Jan 2015")
  
 
 if __name__ == '__main__':
