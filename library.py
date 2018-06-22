@@ -1,4 +1,5 @@
 import re
+from typing import Tuple
 
 _whole_word = lambda x: re.compile(r'(?<=\W)' + x + '(?=\W)')
 
@@ -9,8 +10,16 @@ _floating_point_after_pat = re.compile(r'\.\d+[^a-zA-Z.]')
 _floating_point_before_pat = re.compile(r'(?<=\d\.)')
 
 
-def valid_date(date_tuple):
-    '''Verify that the (year, month, day) tuple is a valid date.'''
+DateTuple = Tuple[int, int, int]
+
+def valid_date(date_tuple: DateTuple):
+    '''Verify that the (year, month, day) DateTuple is a valid date.'''
+
+    # Python way is to not check type, but otherwise floats would be valid.
+    for v in date_tuple:
+        if not isinstance(v, int):
+            raise ValueError
+
     (year, month, day) = date_tuple
     valid = False
 
