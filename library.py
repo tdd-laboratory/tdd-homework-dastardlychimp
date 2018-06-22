@@ -1,10 +1,36 @@
 import re
 
 _whole_word = lambda x: re.compile(r'(?<=\W)' + x + '(?=\W)')
+
+_date_iso8601_pat = _whole_word(r'\d{4}-\d{2}-\d{2}')
 _mixed_ordinal_pat = _whole_word(r'-?\d+(st|th|nd|rd)')
 _integer_pat = _whole_word(r'\d+')
 _floating_point_after_pat = re.compile(r'\.\d+[^a-zA-Z.]')
 _floating_point_before_pat = re.compile(r'(?<=\d\.)')
+
+
+def valid_date(date_tuple):
+    '''Verify that the (year, month, day) tuple is a valid date.'''
+    (year, month, day) = date_tuple
+    valid = False
+
+    if year > 0 and month > 0 and day > 0 and month < 13:
+        if month == 2:
+            if day == 29 and year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
+                valid = True
+            elif day < 29:
+                valid = True
+        elif month in [4, 6, 9, 11] and day < 31:
+            valid = True
+        elif month in [1, 3, 5, 7, 8, 10, 12] and day < 32:
+            valid = True
+
+    return valid
+
+def dates_iso8601(text):
+    '''Find iso8601 dates in text, e.g. "2140-01-25" '''
+    filter_non_dates = lambda rgx: map(int, rgx.groups())
+    tuples_matches = map(lambda: rgx, rgx.groups(), _date_iso8601_pat.finditer(text))
 
 def mixed_ordinals(text):
     '''Find tokens that begin with a number, and then have an ending like 1st or 2nd.'''
