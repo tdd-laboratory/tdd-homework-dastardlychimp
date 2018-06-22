@@ -4,6 +4,7 @@ from typing import Tuple
 _whole_word = lambda x: re.compile(r"\b{}\b".format(x))
 
 _date_iso8601_pat = _whole_word(r'(\d{4})-(0\d|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
+_date_month_word = _whole_word(r'(\d{2}) (J[au]n|Feb|Ma[ry]|Apr|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})');
 _mixed_ordinal_pat = _whole_word(r'-?\d+(st|th|nd|rd)')
 _integer_pat = _whole_word(r'\d+')
 _floating_point_after_pat = re.compile(r'\.\d+[^a-zA-Z.]')
@@ -43,6 +44,10 @@ def dates_iso8601(text):
         date_tuple = _date_tuple_from_match(match)
         if valid_date(date_tuple):
             yield ('iso8601', match)
+
+def dates_month_word(text):
+    ''' Find dates in the format of 21 Dec 1842 '''
+    
 
 def mixed_ordinals(text):
     '''Find tokens that begin with a number, and then have an ending like 1st or 2nd.'''
