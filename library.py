@@ -1,14 +1,13 @@
 import re
 from typing import Tuple
 
-_whole_word = lambda x: re.compile(r'(?<=\W)' + x + '(?=\W)')
+_whole_word = lambda x: re.compile(r"\b{}\b".format(x))
 
-_date_iso8601_pat = _whole_word(r'\d{4}-\d{2}-\d{2}')
+_date_iso8601_pat = _whole_word(r'(\d{4})-(0\d|1[0-2])-(0[1-9]|[12][0-9]|3[01])')
 _mixed_ordinal_pat = _whole_word(r'-?\d+(st|th|nd|rd)')
 _integer_pat = _whole_word(r'\d+')
 _floating_point_after_pat = re.compile(r'\.\d+[^a-zA-Z.]')
 _floating_point_before_pat = re.compile(r'(?<=\d\.)')
-
 
 DateTuple = Tuple[int, int, int]
 
@@ -38,13 +37,17 @@ def valid_date(date_tuple: DateTuple):
 
 def dates_iso8601(text):
     '''Find iso8601 dates in text, e.g. "2140-01-25" '''
-    filter_non_dates = lambda rgx: map(int, rgx.groups())
-    tuples_matches = map(lambda: rgx, rgx.groups(), _date_iso8601_pat.finditer(text))
+    _date_tuple_from_match = lambda match: tuple(map(int, match.groups()))
+    matches = _date_iso8601_pat.finditer(text)
+    for match in _date_iso8601_pat.finditer(text):
+        date_tuple = _date_tuple_from_match(match)
+        if valid_date(date_tuple):
+            yield ('iso8601', match)
 
 def mixed_ordinals(text):
     '''Find tokens that begin with a number, and then have an ending like 1st or 2nd.'''
     for match in _mixed_ordinal_pat.finditer(text):
-        yield('ordinal', match)
+        yield ('ordinal', match)
 
 def integers(text):
     '''Find integers in text. Don't count floating point numbers.'''
